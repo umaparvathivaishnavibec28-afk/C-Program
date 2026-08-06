@@ -1,0 +1,61 @@
+#include <stdlib.h>
+#include <string.h>
+
+// Helper function to map DNA characters to 2-bit values
+int charToBits(char c) {
+    switch (c) {
+        case 'A': return 0;
+        case 'C': return 1;
+        case 'G': return 2;
+        case 'T': return 3;
+        default:  return 0;
+    }
+}
+
+char** findRepeatedDnaSequences(char* s, int* returnSize) {
+    *returnSize = 0;
+    int len = strlen(s);
+    if (len < 10) return NULL;
+
+    // Track state: 0 = unseen, 1 = seen once, 2 = already added to output
+    unsigned char* seen = (unsigned char*)calloc(1048576, sizeof(unsigned char));
+    
+    // Allocate space for potential results
+    int capacity = 100;
+    char** result = (char**)malloc(capacity * sizeof(char*));
+
+    int rolling_hash = 0;
+    // Build the initial 20-bit hash for the first 9 characters
+    for (int i = 0; i < 9; i++) {
+        rolling_hash = (rolling_hash << 2) | charToBits(s[i]);
+    }
+
+    // Mask to keep only the lower 20 bits
+    int mask = (1 << 20) - 1;
+
+    // Slide the window across the rest of the string
+    for (int i = 9; i < len; i++) {
+        rolling_hash = ((rolling_hash << 2) | charToBits(s[i])) & mask;
+
+        if (seen[rolling_hash] == 1) {
+            // Expand results array capacity if needed
+            if (*returnSize >= capacity) {
+                capacity *= 2;
+                result = (char**)realloc(result, capacity * sizeof(char*));
+            }
+            // Store the duplicate 10-letter substring
+            result[*returnSize] = (char*)malloc(11 * sizeof(char));
+            strncpy(result[*returnSize], &s[i - 9], 10);
+            result[*returnSize][10] = '\0';
+            (*returnSize)++;
+            
+            // Mark as 2 so we don't add this duplicate sequence again
+            seen[rolling_hash] = 2;
+        } else if (seen[rolling_hash] == 0) {
+            seen[rolling_hash] = 1;
+        }
+    }
+
+    free(seen);
+    return result;
+}
