@@ -1,0 +1,125 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    *returnSize = 0;
+    if (s == NULL || words == NULL || wordsSize == 0) {
+        return NULL;
+    }
+
+    int sLen = (int)strlen(s);
+    int wordLen = (int)strlen(words[0]);
+    int totalWordsLen = wordsSize * wordLen;
+
+    if (sLen < totalWordsLen) {
+        return NULL;
+    }
+
+    // 1. Group unique words and assign them an integer ID
+    char** uniqueWords = (char**)malloc(wordsSize * sizeof(char*));
+    int* wordCounts = (int*)calloc(wordsSize, sizeof(int));
+    int uniqueCount = 0;
+
+    for (int i = 0; i < wordsSize; i++) {
+        int foundIdx = -1;
+        for (int j = 0; j < uniqueCount; j++) {
+            if (strcmp(words[i], uniqueWords[j]) == 0) {
+                foundIdx = j;
+                break;
+            }
+        }
+        if (foundIdx != -1) {
+            wordCounts[foundIdx]++;
+        } else {
+            uniqueWords[uniqueCount] = words[i];
+            wordCounts[uniqueCount] = 1;
+            uniqueCount++;
+        }
+    }
+
+    // Allocate array to hold matching starting indices
+    int* result = (int*)malloc(sLen * sizeof(int));
+    int resultCount = 0;
+
+    // Arrays to maintain counts inside the sliding window
+    int* currentCounts = (int*)malloc(uniqueCount * sizeof(int));
+
+    // 2. Sliding Window optimized loop
+    // Check all possible starting phase offsets (0 up to wordLen - 1)
+    for (int i = 0; i < wordLen; i++) {
+        int left = i;
+        int count = 0; // Total valid words currently inside the window
+        memset(currentCounts, 0, uniqueCount * sizeof(int));
+
+        for (int right = i; right + wordLen <= sLen; right += wordLen) {
+            // Extract the word at the right boundary
+            char backup = s[right + wordLen];
+            s[right + wordLen] = '\0';
+            char* subStr = &s[right];
+
+            // Identify the unique ID of this word fragment
+            int wordId = -1;
+            for (int j = 0; j < uniqueCount; j++) {
+                if (strcmp(subStr, uniqueWords[j]) == 0) {
+                    wordId = j;
+                    break;
+                }
+            }
+            s[right + wordLen] = backup; // Restore the character
+
+            if (wordId != -1) {
+                currentCounts[wordId]++;
+                count++;
+
+                // If a word's count exceeds its allowed limit, shrink window from the left
+                while (currentCounts[wordId] > wordCounts[wordId]) {
+                    char leftBackup = s[left + wordLen];
+                    s[left + wordLen] = '\0';
+                    char* leftSubStr = &s[left];
+
+                    int leftWordId = -1;
+                    for (int j = 0; j < uniqueCount; j++) {
+                        if (strcmp(leftSubStr, uniqueWords[j]) == 0) {
+                            leftWordId = j;
+                            break;
+                        }
+                    }
+                    s[left + wordLen] = leftBackup;
+
+                    if (leftWordId != -1) {
+                        currentCounts[leftWordId]--;
+                        count--;
+                    }
+                    left += wordLen;
+                }
+
+                // If window size matches target, we found a valid concatenation starting index
+                if (count == wordsSize) {
+                    result[resultCount++] = left;
+                }
+            } else {
+                // Invalid word encountered: clear the window completely
+                memset(currentCounts, 0, uniqueCount * sizeof(int));
+                count = 0;
+                left = right + wordLen;
+            }
+        }
+    }
+
+    // Clean up temporary tracking allocations
+    free(uniqueWords);
+    free(wordCounts);
+    free(currentCounts);
+
+    // 3. Set return parameters
+    *returnSize = resultCount;
+    if (resultCount == 0) {
+        free(result);
+        return NULL;
+    }
+    return result;
+}
