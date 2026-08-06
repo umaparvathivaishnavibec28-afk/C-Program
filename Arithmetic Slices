@@ -1,0 +1,21 @@
+#include <stdio.h>
+
+int numberOfArithmeticSlices(int* nums, int numsSize) {
+    if (nums == NULL || numsSize < 3) return 0;
+
+    int total_slices = 0;
+    int current_count = 0; // Number of valid arithmetic subarrays ending at the current index
+
+    for (int i = 2; i < numsSize; ++i) {
+        // Check if the current triplet forms an arithmetic progression
+        if (nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 2]) {
+            current_count++;
+            total_slices += current_count;
+        } else {
+            // Sequence broken, reset window tracker
+            current_count = 0;
+        }
+    }
+
+    return total_slices;
+}
