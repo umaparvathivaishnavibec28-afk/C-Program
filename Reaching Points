@@ -1,0 +1,23 @@
+class Solution {
+public:
+    bool reachingPoints(int sx, int sy, int tx, int ty) {
+        // Work backwards from target to source
+        while (tx > sx && ty > sy) {
+            if (tx > ty) {
+                tx %= ty;
+            } else {
+                ty %= tx;
+            }
+        }
+        
+        // Check if we can reach the source by moving only along one axis
+        if (tx == sx && ty >= sy) {
+            return (ty - sy) % sx == 0;
+        }
+        if (ty == sy && tx >= sx) {
+            return (tx - sx) % sy == 0;
+        }
+        
+        return false;
+    }
+};
