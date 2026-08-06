@@ -1,0 +1,22 @@
+int minSubArrayLen(int target, int* nums, int numsSize) {
+    int left = 0;
+    int current_sum = 0;
+    int min_len = numsSize + 1; // Initialize to a value larger than possible
+
+    for (int right = 0; right < numsSize; right++) {
+        current_sum += nums[right]; // Expand the window to the right
+
+        // Shrink the window from the left as long as the sum is valid
+        while (current_sum >= target) {
+            int window_len = right - left + 1;
+            if (window_len < min_len) {
+                min_len = window_len;
+            }
+            current_sum -= nums[left];
+            left++;
+        }
+    }
+
+    // If min_len didn't change, no valid subarray was found
+    return (min_len == numsSize + 1) ? 0 : min_len;
+}
