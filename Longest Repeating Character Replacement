@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <string.h>
+
+// Macro helper to find the maximum of two values
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+int characterReplacement(char* s, int k) {
+    if (s == NULL) return 0;
+
+    int count[26] = {0};
+    int left = 0;
+    int max_freq = 0;
+    int max_len = 0;
+    int s_len = strlen(s);
+
+    for (int right = 0; right < s_len; ++right) {
+        // Increment the frequency of the current character
+        int right_idx = s[right] - 'A';
+        count[right_idx]++;
+        
+        // Track the highest frequency of any single character seen in the current window
+        max_freq = MAX(max_freq, count[right_idx]);
+
+        // If the number of characters to replace exceeds k, shrink the window from the left
+        int window_len = right - left + 1;
+        if (window_len - max_freq > k) {
+            count[s[left] - 'A']--;
+            left++;
+        }
+
+        // Update the maximum length found so far
+        max_len = MAX(max_len, right - left + 1);
+    }
+
+    return max_len;
+}
