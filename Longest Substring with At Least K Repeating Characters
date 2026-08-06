@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <string.h>
+
+// Macro helper to find the maximum of two values
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+// Recursive helper function that operates on string boundaries
+int longestSubstringHelper(const char* s, int start, int end, int k) {
+    if (end - start < k) return 0;
+
+    // Step 1: Count character frequencies in the current substring range
+    int count[26] = {0};
+    for (int i = start; i < end; ++i) {
+        count[s[i] - 'a']++;
+    }
+
+    // Step 2: Find the first character that violates the frequency condition
+    for (int i = start; i < end; ++i) {
+        if (count[s[i] - 'a'] > 0 && count[s[i] - 'a'] < k) {
+            // Find the next character position that could potentially be valid
+            int next_start = i + 1;
+            while (next_start < end && count[s[next_start] - 'a'] < k) {
+                next_start++;
+            }
+            
+            // Step 3: Split into left and right subproblems and find the max
+            int left_max = longestSubstringHelper(s, start, i, k);
+            int right_max = longestSubstringHelper(s, next_start, end, k);
+            return MAX(left_max, right_max);
+        }
+    }
+
+    // Step 4: If no violating character was found, this entire range is valid
+    return end - start;
+}
+
+int longestSubstring(char* s, int k) {
+    if (s == NULL) return 0;
+    return longestSubstringHelper(s, 0, strlen(s), k);
+}
