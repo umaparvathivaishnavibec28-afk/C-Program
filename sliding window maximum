@@ -1,0 +1,43 @@
+#include <stdlib.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* maxSlidingWindow(int* nums, int numsSize, int k, int* returnSize) {
+    if (numsSize == 0 || k == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+
+    int resSize = numsSize - k + 1;
+    int* result = (int*)malloc(resSize * sizeof(int));
+    *returnSize = resSize;
+
+    // Deque array to store indices of array elements
+    int* deque = (int*)malloc(numsSize * sizeof(int));
+    int front = 0; // Front pointer of deque
+    int rear = 0;  // Rear pointer of deque
+
+    for (int i = 0; i < numsSize; i++) {
+        // 1. Remove elements out of the current sliding window boundary
+        if (front < rear && deque[front] < i - k + 1) {
+            front++;
+        }
+
+        // 2. Remove smaller elements from the rear as they are useless
+        while (front < rear && nums[deque[rear - 1]] <= nums[i]) {
+            rear--;
+        }
+
+        // 3. Insert current element's index at the rear
+        deque[rear++] = i;
+
+        // 4. The front of the deque is always the maximum for the current window
+        if (i >= k - 1) {
+            result[i - k + 1] = nums[deque[front]];
+        }
+    }
+
+    free(deque);
+    return result;
+}
