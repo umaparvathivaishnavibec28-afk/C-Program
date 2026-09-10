@@ -1,0 +1,57 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
+typedef struct {
+    int s1[100]; // Stack 1: handles incoming elements
+    int s2[100]; // Stack 2: handles outgoing elements
+    int top1;    // Top index for s1
+    int top2;    // Top index for s2
+} MyQueue;
+
+/** Initializes your data structure here. */
+MyQueue* myQueueCreate() {
+    MyQueue* obj = (MyQueue*)malloc(sizeof(MyQueue));
+    obj->top1 = 0;
+    obj->top2 = 0;
+    return obj;
+}
+
+/** Push element x to the back of queue. */
+void myQueuePush(MyQueue* obj, int x) {
+    // Standard stack push: add to the top of s1
+    obj->s1[obj->top1++] = x;
+}
+
+/** Removes the element from in front of queue and returns that element. */
+int myQueuePop(MyQueue* obj) {
+    // If output stack (s2) is empty, move all items from s1 to s2
+    if (obj->top2 == 0) {
+        while (obj->top1 > 0) {
+            obj->s2[obj->top2++] = obj->s1[--obj->top1];
+        }
+    }
+    // Standard stack pop: remove from the top of s2
+    return obj->s2[--obj->top2];
+}
+
+/** Get the front element. */
+int myQueuePeek(MyQueue* obj) {
+    // If output stack (s2) is empty, move all items from s1 to s2
+    if (obj->top2 == 0) {
+        while (obj->top1 > 0) {
+            obj->s2[obj->top2++] = obj->s1[--obj->top1];
+        }
+    }
+    // Standard stack peek: look at the top of s2
+    return obj->s2[obj->top2 - 1];
+}
+
+/** Returns whether the queue is empty. */
+bool myQueueEmpty(MyQueue* obj) {
+    return obj->top1 == 0 && obj->top2 == 0;
+}
+
+/** Deallocates memory. */
+void myQueueFree(MyQueue* obj) {
+    free(obj);
+}
