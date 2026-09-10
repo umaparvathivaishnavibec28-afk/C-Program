@@ -1,0 +1,30 @@
+#include <math.h>
+
+int maxArea(int* height, int heightSize) {
+    int max_water = 0;
+    int left = 0;
+    int right = heightSize - 1;
+    
+    while (left < right) {
+        // Calculate the width between the two pointers
+        int width = right - left;
+        
+        // Find the limiting height of the container
+        int current_height = (height[left] < height[right]) ? height[left] : height[right];
+        
+        // Calculate the area and update max_water if it's larger
+        int current_area = width * current_height;
+        if (current_area > max_water) {
+            max_water = current_area;
+        }
+        
+        // Move the pointer pointing to the shorter line inward
+        if (height[left] < height[right]) {
+            left++;
+        } else {
+            right--;
+        }
+    }
+    
+    return max_water;
+}
